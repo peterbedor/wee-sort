@@ -1,0 +1,19 @@
+{
+	"name": "sort",
+	"version": "1.0.0",
+	"description": "",
+	"homepage": "",
+	"author": "",
+	"autoload": true,
+	"extension": false,
+	"data": {},
+	"style": {
+		"build": []
+	},
+	"script": {
+		"build": []
+	},
+	"dependencies": {
+		"wee": "^3.0.0"
+	}
+}

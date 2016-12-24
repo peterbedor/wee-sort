@@ -1,0 +1,29 @@
+<div data-ignore>
+	<button data-ref="reset">Reset</button>
+	<select data-ref="filterKey">
+		{{ #headings|each }}
+			<option value="{{ heading }}">{{ heading }}</option>
+		{{ /headings }}
+	</select>
+	<input type="text" data-ref="filterValue">
+</div>
+<table>
+	<thead>
+		<tr>
+			{{ #headings|each }}
+				<th>{{ heading }} <span data-ref="sort" data-key="{{ heading }}" data-direction="asc">^</span><span data-ref="sort" data-key="{{ heading }}" data-direction="desc">v</span></th>
+			{{ /headings }}
+		</tr>
+	</thead>
+	<tbody>
+		{{ #rows|each }}
+			{{ #hidden|is(false) }}
+				<tr>
+					{{ #columns|each }}
+						<td>{{ value }}</td>
+					{{ /columns }}
+				</tr>
+			{{ /hidden }}
+		{{ /rows }}
+	</tbody>
+</table>
