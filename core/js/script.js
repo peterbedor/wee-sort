@@ -80,7 +80,8 @@ Wee.fn.make('sort', {
 	},
 
 	bindEvents: function() {
-		var scope = this;
+		var scope = this,
+			throttle;
 
 		$.events.on({
 			'ref:sort': {
@@ -97,16 +98,30 @@ Wee.fn.make('sort', {
 			},
 			'ref:filterValue': {
 				keyup: function(e, el) {
-					scope.filter(el.value);
+					// scope.filter(el.value);
+					// TODO: Throttling the event makes it seem like it's slower, figure out if we need it
+					$._win.clearTimeout(throttle);
+
+					throttle = $._win.setTimeout(function() {
+						scope.filter(el.value);
+					}, 10);
+				}
+			},
+			'ref:filterKey': {
+				change: function(e, el) {
+					if (scope.filterVal) {
+						scope.filter(scope.filterVal);
+					}
 				}
 			}
 		});
 	},
 
 	filter: function(value) {
+		console.time('filter');
 		var rows = this.data.rows,
 			key = key = $('ref:filterKey').val(),
-			regExp = new RegExp(value, 'i'),
+			regExp = new RegExp(this.fuzzyValue(value), 'i'),
 			i = 0;
 
 		for (; i < rows.length; i++) {
@@ -123,7 +138,9 @@ Wee.fn.make('sort', {
 			}
 		}
 
+		this.filterVal = value;
 		this.setData('rows', rows);
+		console.timeEnd('filter');
 	},
 
 	sort: function(key, direction) {
@@ -197,6 +214,9 @@ Wee.fn.make('sort', {
 			}
 		});
 
+		this.sortedKey = false;
+		this.sortedDirection = false;
+
 		this.setData('rows', rows);
 	},
 
@@ -207,6 +227,18 @@ Wee.fn.make('sort', {
 			default:
 				return value;
 		}
+	},
+
+	fuzzyValue: function(value) {
+		var letters = value.split(''),
+			searchTerm = '',
+			i = 0;
+
+		for (; i < letters.length; i++) {
+			searchTerm += letters[i] + '.*';
+		}
+
+		return searchTerm;
 	},
 
 	getDate: function(value) {
@@ -220,5 +252,5 @@ Wee.fn.make('sort', {
 		this.app.$resume(true);
 	}
 }, {
-	insance: false
+	instance: false
 });
