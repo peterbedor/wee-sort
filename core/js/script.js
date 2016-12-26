@@ -201,11 +201,11 @@ Wee.fn.make('sort', {
 	},
 
 	reset: function() {
-		var colLength = a.columns.length,
-			rows = this.data.rows;
+		var rows = this.data.rows;
 		
 		rows.sort(function(a, b) {
-			var i = 0;
+			var colLength = a.columns.length,
+				i = 0;
 
 			for (; i < colLength; i++) {
 				var indexA = a.columns[i].originalIndex,
