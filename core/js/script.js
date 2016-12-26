@@ -36,21 +36,24 @@ Wee.fn.make('sort', {
 		var scope = this,
 			headings = this.$table.find('th'),
 			rows = this.$table.find('tr'),
+			headingsLength = headings.length,
+			rowsLength = rows.length,
 			columns = [],
 			r = 0,
 			h = 0;
 
-		for (; h < headings.length; h++) {
+		for (; h < headingsLength; h++) {
 			this.data.headings.push({
 				heading: headings[h].innerText,
 				type: headings[h].dataset.type
 			});
 		}
 
-		for (; r < rows.length; r++) {
-			var c = 0;
+		for (; r < rowsLength; r++) {
+			var childrenLength = rows[r].children.length,
+				c = 0;
 
-			for (; c < rows[r].children.length; c++) {
+			for (; c < childrenLength; c++) {
 				columns.push({
 					key: headings[c].innerText,
 					value: rows[r].children[c].innerText,
@@ -88,7 +91,7 @@ Wee.fn.make('sort', {
 				click: function(e, el) {
 					var data = el.dataset;
 					
-					scope.sort(data.key, data.direction);		
+					scope.sort(data.key, data.direction);
 				}
 			},
 			'ref:reset': {
@@ -122,14 +125,16 @@ Wee.fn.make('sort', {
 		var rows = this.data.rows,
 			key = key = $('ref:filterKey').val(),
 			regExp = new RegExp(this.fuzzyValue(value), 'i'),
+			rowsLength = rows.length,
 			i = 0;
 
-		for (; i < rows.length; i++) {
-			var c = 0;
+		for (; i < rowsLength; i++) {
+			var columnsLength = rows[i].columns.length,
+				c = 0;
 
 			rows[i].hidden = true;
 
-			for (; c < rows[i].columns.length; c++) {
+			for (; c < columnsLength; c++) {
 				var col = rows[i].columns[c];
 
 				if (col.key === key && regExp.test(col.value)) {
@@ -152,9 +157,10 @@ Wee.fn.make('sort', {
 		}
 
 		rows.sort(function(a, b) {
-			var i = 0;
+			var colLength = a.columns.length,
+				i = 0;
 
-			for (; i < a.columns.length; i++) {
+			for (; i < colLength; i++) {
 				var valA = a.columns[i].sortValue,
 					valB = b.columns[i].sortValue;
 
@@ -195,12 +201,13 @@ Wee.fn.make('sort', {
 	},
 
 	reset: function() {
-		var rows = this.data.rows;
+		var colLength = a.columns.length,
+			rows = this.data.rows;
 		
 		rows.sort(function(a, b) {
 			var i = 0;
 
-			for (; i < a.columns.length; i++) {
+			for (; i < colLength; i++) {
 				var indexA = a.columns[i].originalIndex,
 					indexB = b.columns[i].originalIndex;
 
@@ -231,10 +238,11 @@ Wee.fn.make('sort', {
 
 	fuzzyValue: function(value) {
 		var letters = value.split(''),
+			lettersLength = letters.length,
 			searchTerm = '',
 			i = 0;
 
-		for (; i < letters.length; i++) {
+		for (; i < lettersLength; i++) {
 			searchTerm += letters[i] + '.*';
 		}
 
