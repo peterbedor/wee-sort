@@ -26,10 +26,10 @@ Wee.fn.make('sort', {
 	createElements: function() {
 		var appSel = this.conf.appSel.split(':');
 
-		appSel = (appSel.length > 0) ? appSel[1] : appSel[0];
+		appSel = appSel[appSel.length ? 1 : 0];
 
 		this.$table.hide();
-		this.$table.before('<div data-ref="' + appSel + '" class="wee-sort-app" />');
+		this.$table.before('<div class="wee-sort-app" data-ref="' + appSel + '" />');
 	},
 
 	processData: function() {
@@ -43,9 +43,9 @@ Wee.fn.make('sort', {
 			h = 0;
 
 		for (; h < headingsLength; h++) {
-			this.data.headings.push({
+			scope.data.headings.push({
 				heading: headings[h].innerText,
-				type: headings[h].dataset.type
+				type: headings[h].getAttribute('data-type')
 			});
 		}
 
@@ -56,9 +56,9 @@ Wee.fn.make('sort', {
 			for (; c < childrenLength; c++) {
 				columns.push({
 					key: headings[c].innerText,
-					value: rows[r].children[c].innerText,
-					sortValue: this.getSortValue(rows[r].children[c].innerText, headings[c].dataset.type),
-					type: headings[c].dataset.type,
+					value: rows[r].children[c].textContent,
+					sortValue: this.getSortValue(rows[r].children[c].innerText, headings[c].getAttribute('data-type')),
+					type: headings[c].getAttribute('data-type'),
 					originalIndex: r
 				});
 			}
@@ -101,13 +101,13 @@ Wee.fn.make('sort', {
 			},
 			'ref:filterValue': {
 				keyup: function(e, el) {
-					// scope.filter(el.value);
+					scope.filter(el.value);
 					// TODO: Throttling the event makes it seem like it's slower, figure out if we need it
-					$._win.clearTimeout(throttle);
+					// $._win.clearTimeout(throttle);
 
-					throttle = $._win.setTimeout(function() {
-						scope.filter(el.value);
-					}, 10);
+					// throttle = $._win.setTimeout(function() {
+					// 	scope.filter(el.value);
+					// }, 10);
 				}
 			},
 			'ref:filterKey': {
@@ -123,7 +123,7 @@ Wee.fn.make('sort', {
 	filter: function(value) {
 		console.time('filter');
 		var rows = this.data.rows,
-			key = key = $('ref:filterKey').val(),
+			key = $('ref:filterKey').val(),
 			regExp = new RegExp(this.fuzzyValue(value), 'i'),
 			rowsLength = rows.length,
 			i = 0;
@@ -134,6 +134,7 @@ Wee.fn.make('sort', {
 
 			rows[i].hidden = true;
 
+			// TODO: do I need to loop through all columns since the key is specified
 			for (; c < columnsLength; c++) {
 				var col = rows[i].columns[c];
 
@@ -250,9 +251,7 @@ Wee.fn.make('sort', {
 	},
 
 	getDate: function(value) {
-		var date = value.replace(/(?:st|nd|rd|th)/g, '');
-
-		return Date.parse(date);
+		return Date.parse(value.replace(/(?:st|nd|rd|th)/g, ''));
 	},
 
 	setData: function(key, value) {
