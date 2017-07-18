@@ -3,10 +3,16 @@ Wee.fn.make('sort', {
 		this.$private.init();
 	}
 }, {
+	/**
+	 * Construct
+	 * 
+	 * @param  {Object} conf - configuration object
+	 */
 	_construct: function(conf) {
 		this.conf = $.extend({
 			sel: 'ref:weeSort',
-			appSel: 'ref:weeSortApp'
+			appSel: 'ref:weeSortApp',
+			class: 'wee-sort-app'
 		}, conf);
 
 		this.$table = $(this.conf.sel);
@@ -16,6 +22,9 @@ Wee.fn.make('sort', {
 		};
 	},
 
+	/**
+	 * Init method
+	 */
 	init: function() {
 		this.processData();
 		this.createElements();
@@ -23,39 +32,48 @@ Wee.fn.make('sort', {
 		this.bindEvents();
 	},
 
+	/**
+	 * Create necessary DOM elements
+	 */
 	createElements: function() {
 		var appSel = this.conf.appSel.split(':');
 
-		appSel = (appSel.length > 0) ? appSel[1] : appSel[0];
+		appSel = appSel[appSel.length ? 1 : 0];
 
 		this.$table.hide();
-		this.$table.before('<div data-ref="' + appSel + '" class="wee-sort-app" />');
+		this.$table.before('<div class="' + this.conf.class + '" data-ref="' + appSel + '" />');
 	},
 
+	/**
+	 * Read table data and convert it into a data model for the app
+	 */
 	processData: function() {
 		var scope = this,
 			headings = this.$table.find('th'),
 			rows = this.$table.find('tr'),
+			headingsLength = headings.length,
+			rowsLength = rows.length,
 			columns = [],
 			r = 0,
 			h = 0;
 
-		for (; h < headings.length; h++) {
-			this.data.headings.push({
+		for (; h < headingsLength; h++) {
+			scope.data.headings.push({
 				heading: headings[h].innerText,
-				type: headings[h].dataset.type
+				type: headings[h].getAttribute('data-type')
 			});
 		}
 
-		for (; r < rows.length; r++) {
-			var c = 0;
+		for (; r < rowsLength; r++) {
+			var childrenLength = rows[r].children.length,
+				c = 0;
 
-			for (; c < rows[r].children.length; c++) {
+			for (; c < childrenLength; c++) {
 				columns.push({
 					key: headings[c].innerText,
-					value: rows[r].children[c].innerText,
-					sortValue: this.getSortValue(rows[r].children[c].innerText, headings[c].dataset.type),
-					type: headings[c].dataset.type,
+					value: rows[r].children[c].textContent,
+					sortValue: this.getSortValue(rows[r].children[c].innerText, headings[c].getAttribute('data-type')),
+					type: headings[c].getAttribute('data-type'),
 					originalIndex: r
 				});
 			}
@@ -71,6 +89,9 @@ Wee.fn.make('sort', {
 		scope.data.rows.shift();
 	},
 
+	/**
+	 * Initialize the app
+	 */
 	initApp: function() {
 		this.app = $.app.make('weeSort', {
 			target: 'ref:weeSortApp',
@@ -79,15 +100,19 @@ Wee.fn.make('sort', {
 		});
 	},
 
+	/**
+	 * Bind necessary events
+	 */
 	bindEvents: function() {
-		var scope = this;
+		var scope = this,
+			throttle;
 
 		$.events.on({
 			'ref:sort': {
 				click: function(e, el) {
 					var data = el.dataset;
 					
-					scope.sort(data.key, data.direction);		
+					scope.sort(data.key, data.direction);
 				}
 			},
 			'ref:reset': {
@@ -98,23 +123,43 @@ Wee.fn.make('sort', {
 			'ref:filterValue': {
 				keyup: function(e, el) {
 					scope.filter(el.value);
+					// TODO: Throttling the event makes it seem like it's slower, figure out if we need it
+					// $._win.clearTimeout(throttle);
+
+					// throttle = $._win.setTimeout(function() {
+					// 	scope.filter(el.value);
+					// }, 10);
+				}
+			},
+			'ref:filterKey': {
+				change: function(e, el) {
+					if (scope.filterVal) {
+						scope.filter(scope.filterVal);
+					}
 				}
 			}
 		});
 	},
 
+	/**
+	 * Filter the table
+	 * @param  {String} value
+	 */
 	filter: function(value) {
 		var rows = this.data.rows,
-			key = key = $('ref:filterKey').val(),
-			regExp = new RegExp(value, 'i'),
+			key = $('ref:filterKey').val(),
+			regExp = new RegExp(this.fuzzyValue(value), 'i'),
+			rowsLength = rows.length,
 			i = 0;
 
-		for (; i < rows.length; i++) {
-			var c = 0;
+		for (; i < rowsLength; i++) {
+			var columnsLength = rows[i].columns.length,
+				c = 0;
 
 			rows[i].hidden = true;
 
-			for (; c < rows[i].columns.length; c++) {
+			// TODO: do I need to loop through all columns since the key is specified
+			for (; c < columnsLength; c++) {
 				var col = rows[i].columns[c];
 
 				if (col.key === key && regExp.test(col.value)) {
@@ -123,9 +168,15 @@ Wee.fn.make('sort', {
 			}
 		}
 
+		this.filterVal = value;
 		this.setData('rows', rows);
 	},
 
+	/**
+	 * Sort the table data
+	 * @param  {String} key - The table column name
+	 * @param  {String} direction - The direction to sort
+	 */
 	sort: function(key, direction) {
 		var scope = this,
 			rows = scope.data.rows;
@@ -135,9 +186,10 @@ Wee.fn.make('sort', {
 		}
 
 		rows.sort(function(a, b) {
-			var i = 0;
+			var colLength = a.columns.length,
+				i = 0;
 
-			for (; i < a.columns.length; i++) {
+			for (; i < colLength; i++) {
 				var valA = a.columns[i].sortValue,
 					valB = b.columns[i].sortValue;
 
@@ -177,13 +229,17 @@ Wee.fn.make('sort', {
 		this.setData('rows', rows);
 	},
 
+	/**
+	 * Reset the table
+	 */
 	reset: function() {
 		var rows = this.data.rows;
 		
 		rows.sort(function(a, b) {
-			var i = 0;
+			var colLength = a.columns.length,
+				i = 0;
 
-			for (; i < a.columns.length; i++) {
+			for (; i < colLength; i++) {
 				var indexA = a.columns[i].originalIndex,
 					indexB = b.columns[i].originalIndex;
 
@@ -197,9 +253,18 @@ Wee.fn.make('sort', {
 			}
 		});
 
+		this.sortedKey = false;
+		this.sortedDirection = false;
+
 		this.setData('rows', rows);
 	},
 
+	/**
+	 * Get the sort type
+	 * @param  {String} value 
+	 * @param  {String} type  
+	 * @return {mixed}       
+	 */
 	getSortValue: function(value, type) {
 		switch (type) {
 			case 'date':
@@ -209,16 +274,42 @@ Wee.fn.make('sort', {
 		}
 	},
 
-	getDate: function(value) {
-		var date = value.replace(/(?:st|nd|rd|th)/g, '');
+	/**
+	 * Generate a regex string for "fuzzy" matches
+	 * @param  {[type]} value
+	 * @return {String}
+	 */
+	fuzzyValue: function(value) {
+		var letters = value.split(''),
+			lettersLength = letters.length,
+			searchTerm = '',
+			i = 0;
 
-		return Date.parse(date);
+		for (; i < lettersLength; i++) {
+			searchTerm += letters[i] + '.*';
+		}
+
+		return searchTerm;
 	},
 
+	/**
+	 * Parse the date
+	 * @param  {String} value
+	 * @return {Date}
+	 */
+	getDate: function(value) {
+		return Date.parse(value.replace(/(?:st|nd|rd|th)/g, ''));
+	},
+
+	/**
+	 * Set app data
+	 * @param {String} key
+	 * @param {mixed} value
+	 */
 	setData: function(key, value) {
 		this.app.$set(key, value);
 		this.app.$resume(true);
 	}
 }, {
-	insance: false
+	instance: false
 });

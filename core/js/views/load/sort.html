@@ -1,17 +1,19 @@
-<div data-ignore>
-	<button data-ref="reset">Reset</button>
-	<select data-ref="filterKey">
-		{{ #headings|each }}
-			<option value="{{ heading }}">{{ heading }}</option>
-		{{ /headings }}
-	</select>
-	<input type="text" data-ref="filterValue">
+<div class="wee-sort-form" data-ignore>
+	<input type="text" class="wee-sort-form__input" data-ref="filterValue">
+	<div class="wee-sort-form__select-wrap">
+		<select class="wee-sort-form__select" data-ref="filterKey">
+			{{ #headings|each }}
+				<option value="{{ heading }}">{{ heading }}</option>
+			{{ /headings }}
+		</select>
+	</div>
+	<button class="wee-sort-form__button" data-ref="reset">Reset</button>
 </div>
 <table>
 	<thead>
 		<tr>
 			{{ #headings|each }}
-				<th>{{ heading }} <span data-ref="sort" data-key="{{ heading }}" data-direction="asc">^</span><span data-ref="sort" data-key="{{ heading }}" data-direction="desc">v</span></th>
+				<th>{{ heading }} <span class="wee-sort-direction" data-ref="sort" data-key="{{ heading }}" data-direction="asc">^</span><span class="wee-sort-direction" data-ref="sort" data-key="{{ heading }}" data-direction="desc">v</span></th>
 			{{ /headings }}
 		</tr>
 	</thead>
