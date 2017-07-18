@@ -11,7 +11,8 @@ Wee.fn.make('sort', {
 	_construct: function(conf) {
 		this.conf = $.extend({
 			sel: 'ref:weeSort',
-			appSel: 'ref:weeSortApp'
+			appSel: 'ref:weeSortApp',
+			class: 'wee-sort-app'
 		}, conf);
 
 		this.$table = $(this.conf.sel);
@@ -40,7 +41,7 @@ Wee.fn.make('sort', {
 		appSel = appSel[appSel.length ? 1 : 0];
 
 		this.$table.hide();
-		this.$table.before('<div class="wee-sort-app" data-ref="' + appSel + '" />');
+		this.$table.before('<div class="' + this.conf.class + '" data-ref="' + appSel + '" />');
 	},
 
 	/**
