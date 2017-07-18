@@ -3,6 +3,11 @@ Wee.fn.make('sort', {
 		this.$private.init();
 	}
 }, {
+	/**
+	 * Construct
+	 * 
+	 * @param  {Object} conf - configuration object
+	 */
 	_construct: function(conf) {
 		this.conf = $.extend({
 			sel: 'ref:weeSort',
@@ -16,6 +21,9 @@ Wee.fn.make('sort', {
 		};
 	},
 
+	/**
+	 * Init method
+	 */
 	init: function() {
 		this.processData();
 		this.createElements();
@@ -23,6 +31,9 @@ Wee.fn.make('sort', {
 		this.bindEvents();
 	},
 
+	/**
+	 * Create necessary DOM elements
+	 */
 	createElements: function() {
 		var appSel = this.conf.appSel.split(':');
 
@@ -32,6 +43,9 @@ Wee.fn.make('sort', {
 		this.$table.before('<div class="wee-sort-app" data-ref="' + appSel + '" />');
 	},
 
+	/**
+	 * Read table data and convert it into a data model for the app
+	 */
 	processData: function() {
 		var scope = this,
 			headings = this.$table.find('th'),
@@ -74,6 +88,9 @@ Wee.fn.make('sort', {
 		scope.data.rows.shift();
 	},
 
+	/**
+	 * Initialize the app
+	 */
 	initApp: function() {
 		this.app = $.app.make('weeSort', {
 			target: 'ref:weeSortApp',
@@ -82,6 +99,9 @@ Wee.fn.make('sort', {
 		});
 	},
 
+	/**
+	 * Bind necessary events
+	 */
 	bindEvents: function() {
 		var scope = this,
 			throttle;
@@ -120,8 +140,11 @@ Wee.fn.make('sort', {
 		});
 	},
 
+	/**
+	 * Filter the table
+	 * @param  {String} value
+	 */
 	filter: function(value) {
-		console.time('filter');
 		var rows = this.data.rows,
 			key = $('ref:filterKey').val(),
 			regExp = new RegExp(this.fuzzyValue(value), 'i'),
@@ -146,9 +169,13 @@ Wee.fn.make('sort', {
 
 		this.filterVal = value;
 		this.setData('rows', rows);
-		console.timeEnd('filter');
 	},
 
+	/**
+	 * Sort the table data
+	 * @param  {String} key - The table column name
+	 * @param  {String} direction - The direction to sort
+	 */
 	sort: function(key, direction) {
 		var scope = this,
 			rows = scope.data.rows;
@@ -201,6 +228,9 @@ Wee.fn.make('sort', {
 		this.setData('rows', rows);
 	},
 
+	/**
+	 * Reset the table
+	 */
 	reset: function() {
 		var rows = this.data.rows;
 		
@@ -228,6 +258,12 @@ Wee.fn.make('sort', {
 		this.setData('rows', rows);
 	},
 
+	/**
+	 * Get the sort type
+	 * @param  {String} value 
+	 * @param  {String} type  
+	 * @return {mixed}       
+	 */
 	getSortValue: function(value, type) {
 		switch (type) {
 			case 'date':
@@ -237,6 +273,11 @@ Wee.fn.make('sort', {
 		}
 	},
 
+	/**
+	 * Generate a regex string for "fuzzy" matches
+	 * @param  {[type]} value
+	 * @return {String}
+	 */
 	fuzzyValue: function(value) {
 		var letters = value.split(''),
 			lettersLength = letters.length,
@@ -250,10 +291,20 @@ Wee.fn.make('sort', {
 		return searchTerm;
 	},
 
+	/**
+	 * Parse the date
+	 * @param  {String} value
+	 * @return {Date}
+	 */
 	getDate: function(value) {
 		return Date.parse(value.replace(/(?:st|nd|rd|th)/g, ''));
 	},
 
+	/**
+	 * Set app data
+	 * @param {String} key
+	 * @param {mixed} value
+	 */
 	setData: function(key, value) {
 		this.app.$set(key, value);
 		this.app.$resume(true);
